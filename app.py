@@ -30,7 +30,7 @@ SYSTEM_PROMPT = """
 रावसाहेब यांच्या ५४० झाडांच्या बागेसाठी, रोग-कीड नियंत्रण, 00:52:34 व 00:45:45 खत व्यवस्थापन, पाणी व्यवस्थापन आणि आगामी छाटणी याबद्दल अत्यंत अचूक मार्गदर्शन करा. 
 तुमची संपूर्ण उत्तरे फक्त आणि फक्त 'मराठी' भाषेत (Devanagari script) असली पाहिजेत आणि प्रत्येक उत्तरात आदराने 'रावसाहेब' असा उल्लेख करा.
 """
-model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=SYSTEM_PROMPT)
+model = genai.GenerativeModel('gemini-1.5-flash-latest', system_instruction=SYSTEM_PROMPT)
 # ५. चॅट हिस्टरी जपण्यासाठी सेशन स्टेट
 if "messages" not in st.session_state:
     st.session_state.messages = []
