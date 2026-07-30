@@ -1,76 +1,80 @@
+
 import streamlit as st
-import sqlite3
-from datetime import datetime
+import google.generativeai as genai
 from PIL import Image
 
-# Page Configuration
+# १. पेजची सेटिंग
 st.set_page_config(
-    page_title="Shevga AI - शेवगा डॉक्टर",
+    page_title="ShevgAI संवाद | Drumstick Expert",
     page_icon="🌿",
     layout="centered"
 )
 
-# Database Initialization
-def init_db():
-    conn = sqlite3.connect('shevga_ai_records.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS farmer_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date_time TEXT,
-            category TEXT,
-            diagnosis TEXT,
-            remedy TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
+# २. UI डिझाईन
+st.title("🌿 ShevgAI संवाद")
+st.caption("आमची माती, आमची माणसं.")
+st.write("रावसाहेब, इथे तुम्ही शेवगा बागेविषयी कोणतेही प्रश्न थेट विचारू शकता आणि हवे असल्यास फोटोही पाठवू शकता!")
 
-def save_log(category, diagnosis, remedy):
-    conn = sqlite3.connect('shevga_ai_records.db')
-    cursor = conn.cursor()
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    cursor.execute('''
-        INSERT INTO farmer_logs (date_time, category, diagnosis, remedy)
-        VALUES (?, ?, ?, ?)
-    ''', (now, category, diagnosis, remedy))
-    conn.commit()
-    conn.close()
+# ३. API Key जोडणी
+try:
+    api_key = st.secrets["GOOGLE_API_KEY"]
+    genai.configure(api_key=api_key)
+except KeyError:
+    st.error("API Key सापडली नाही! कृपया Streamlit च्या Advanced Settings मध्ये Secrets तपासा.")
+    st.stop()
 
-init_db()
+# ४. ShevgAI चे तज्ञ मार्गदर्शन (System Prompt)
+SYSTEM_PROMPT = """
+तुम्ही एक प्रगत शेती तज्ञ (Agricultural Expert) आणि 'ShevgAI' आहात. 
+विशेषतः शेवगा (Moringa/Drumstick) शेतीमध्ये तुमचा हातखंडा आहे. 
+रावसाहेब यांच्या ५४० झाडांच्या बागेसाठी, रोग-कीड नियंत्रण, 00:52:34 व 00:45:45 खत व्यवस्थापन, पाणी व्यवस्थापन आणि आगामी छाटणी याबद्दल अत्यंत अचूक मार्गदर्शन करा. 
+तुमची संपूर्ण उत्तरे फक्त आणि फक्त 'मराठी' भाषेत (Devanagari script) असली पाहिजेत आणि प्रत्येक उत्तरात आदराने 'रावसाहेब' असा उल्लेख करा.
+"""
 
-# AI Logic Simulation
-def analyze_shevga_image(image):
-    return {
-        "category": "Category B (कीड प्रादुर्भाव - थ्रिप्स/अळ्या)",
-        "confidence": "94.5%",
-        "diagnosis": "पानांवर थ्रिप्स (चंदेरी डाग) किंवा पानांची कुटळणारी अळी यांचा प्रादुर्भाव दिसून येत आहे.",
-        "remedy": "प्रादुर्भाव सुरुवातीच्या टप्प्यात असेल तर 'निमअर्क (10,000 ppm) 2 मिली/लीटर' किंवा दशपर्णी अर्क फवारा. प्रादुर्भाव जास्त असल्यास शिफारस केलेले कीटकनाशक वापरा.",
-        "remedy_type": "सेंद्रिय / रासायनिक फवारणी"
-    }
+model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=SYSTEM_PROMPT)
 
-# UI Layout
-st.title("🌿 Shevga AI (शेवगा AI डॉक्टर)")
-st.write("रावसाहेब, तुमच्या शेवगा बागेतील झाडाचा किंवा पानाचा फोटो अपलोड करा आणि तात्काळ अचूक निदान व उपाय मिळवा.")
+# ५. चॅट हिस्टरी जपण्यासाठी सेशन स्टेट
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-st.markdown("---")
+# आधी झालेला संवाद स्क्रीनवर दाखवणे
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        if "image" in message and message["image"] is not None:
+            st.image(message["image"], width=200)
+        st.markdown(message["content"])
 
-uploaded_file = st.file_uploader("📷 बागेतील फोटो निवडा किंवा कॅमेऱ्याने काढा...", type=["jpg", "jpeg", "png"])
+# ६. फोटो अपलोड करण्याची पर्यायी सोय (चॅटसोबत फोटो पाठवण्यासाठी)
+uploaded_file = st.file_uploader("बागेचा फोटो अपलोड करा (पर्यायी - फोटोबद्दल प्रश्न विचारण्यासाठी)", type=["jpg", "jpeg", "png"])
 
-if uploaded_file is not None:
-    img = Image.open(uploaded_file)
-    st.image(img, caption="अपलोड केलेला फोटो", use_column_width=True)
+# ७. वापरकर्त्यासाठी मेसेज टाईप करण्याचा बॉक्स (चॅट इनपुट)
+if user_prompt := st.chat_input("शेवगा बागेविषयी तुमचा प्रश्न इथे विचार करा..."):
     
-    if st.button("🔍 AI द्वारे विश्लेषण करा"):
-        with st.spinner("AI मॉडेल फोटो तपासत आहे... कृपया थोडा वेळ थांबा..."):
-            result = analyze_shevga_image(img)
-            save_log(result["category"], result["diagnosis"], result["remedy"])
-            
-            st.success(f"**ओळखलेली श्रेणी:** {result['category']} (अचूकता: {result['confidence']})")
-            st.info(f"**निदान (Diagnosis):** {result['diagnosis']}")
-            st.warning(f"**सुचवलेला उपाय (Action Plan):** {result['remedy']}")
-            st.write(f"**उपचाराचा प्रकार:** `{result['remedy_type']}`")
-            st.write("✅ *हे निदान डेटाबेसमध्ये जतन झाले आहे.*")
-
-st.markdown("---")
-st.caption("Developed for Shevga Orchard Management | Shevga AI v1.0")
+    current_image = None
+    if uploaded_file is not None:
+        current_image = Image.open(uploaded_file)
+    
+    # वापरकर्त्याचा मेसेज स्क्रीनवर दाखवणे
+    with st.chat_message("user"):
+        if current_image:
+            st.image(current_image, width=200)
+        st.markdown(user_prompt)
+    
+    # हिस्टरीमध्ये सेव्ह करणे
+    st.session_state.messages.append({"role": "user", "content": user_prompt, "image": current_image})
+    
+    # ॲपचे उत्तर जनरेट करणे
+    with st.chat_message("assistant"):
+        with st.spinner("ShevgAI विचार करत आहे..."):
+            try:
+                contents = [user_prompt]
+                if current_image:
+                    contents.append(current_image)
+                
+                response = model.generate_content(contents)
+                reply_text = response.text
+                
+                st.markdown(reply_text)
+                st.session_state.messages.append({"role": "assistant", "content": reply_text, "image": None})
+            except Exception as e:
+                st.error(f"तांत्रिक अडचण आली: {e}")
