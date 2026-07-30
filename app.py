@@ -31,7 +31,7 @@ SYSTEM_PROMPT = """
 तुमची संपूर्ण उत्तरे फक्त आणि फक्त 'मराठी' भाषेत (Devanagari script) असली पाहिजेत आणि प्रत्येक उत्तरात आदराने 'रावसाहेब' असा उल्लेख करा.
 """
 
-model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=SYSTEM_PROMPT)
+model = genai.GenerativeModel('gemini-1.5-pro', system_instruction=SYSTEM_PROMPT)
 
 # ५. चॅट हिस्टरी जपण्यासाठी सेशन स्टेट
 if "messages" not in st.session_state:
