@@ -4,7 +4,7 @@ import google.generativeai as genai
 from PIL import Image
 
 # १. इथे तुमची गुगल API Key टाका (उद्धरण चिन्हांमध्ये "")
-GOOGLE_API_KEY = "TUMCHI_API_KEY_ITHE_TAKA" 
+GOOGLE_API_KEY = "AQ.Ab8RN6IaQF2cBJoe2vJeghUkPvHcQ8pp" 
 
 # API Key कन्फिगर करणे
 genai.configure(api_key=GOOGLE_API_KEY)
