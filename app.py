@@ -3,7 +3,7 @@ import google.generativeai as genai
 from PIL import Image
 import os
 os.environ["GEMINI_API_KEY"] ="AQ.Ab8RN6JMsRRYJU9XEUntgigYcPkCePvatkB0S4UlIlnXgjprNw"
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel('gemini-3.6-flash')
 st.set_page_config(page_title="ShevgAI संवाद", page_icon="🌿")
 st.title("🌿 ShevgAI संवाद")
 st.write("आमची माती, आमची माणसं.")
