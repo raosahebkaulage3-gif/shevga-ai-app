@@ -1,20 +1,15 @@
 import streamlit as st
 import google.generativeai as genai
 from PIL import Image
-
-GOOGLE_API_KEY = "AQ.Ab8RN6JMsRRYJU9XEUntgigYPkCePvatkB0S4UlIInXgjprNw"
-genai.configure(api_key=GOOGLE_API_KEY)
-
+import os
+os.environ["GEMINI_API_KEY"] = "तुमची_संपूर्ण_AQ_वाली_चावी_इथे_टाका"
 model = genai.GenerativeModel('gemini-1.5-flash')
-
 st.set_page_config(page_title="ShevgAI संवाद", page_icon="🌿")
 st.title("🌿 ShevgAI संवाद")
 st.write("आमची माती, आमची माणसं.")
 st.markdown("---")
-
 uploaded_file = st.file_uploader("बागेचा किंवा पानाचा/खोडाचा फोटो अपलोड करा", type=['jpg', 'jpeg', 'png'])
 user_prompt = st.text_input("शेवगा बागेविषयी तुमचा प्रश्न इथे टाईप करा...")
-
 if st.button("माहिती मिळवा"):
     if uploaded_file or user_prompt:
         with st.spinner("माहिती शोधत आहे..."):
