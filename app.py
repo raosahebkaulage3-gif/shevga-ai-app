@@ -3,12 +3,12 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# गुगलची नवीन चावी
+# गुगलची तुमची खात्रीशीर API चावी
 os.environ["GEMINI_API_KEY"] = "AQ.Ab8RN6JMsRRYJU9XEUntgigYPkCePvatkB0S4UlIInXgjprNw"
 
-# मॉडेल आणि मराठी भाषेची सक्ती करणारी सिस्टीम इन्स्ट्रक्शन
+# सर्वात नवीन आणि चालू असलेले मॉडेल नाव
 model = genai.GenerativeModel(
-    model_name='gemini-2.5-flash',
+    model_name='gemini-2.0-flash',
     system_instruction="You are an expert agricultural assistant for drumstick (shevga) farming. You must always reply strictly in Marathi language (मराठी भाषेतच उत्तरे द्या)."
 )
 
