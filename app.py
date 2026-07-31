@@ -12,7 +12,7 @@ else:
 
 # मॉडेल आणि मराठी भाषेची सक्ती
 model = genai.GenerativeModel(
-    model_name='gemini-1.5-flash',
+    model_name='gemini-3.5-flash',
     system_instruction="You are an expert agricultural assistant for drumstick (shevga) farming. You must always reply strictly in Marathi language (मराठी भाषेतच उत्तरे द्या)."
 )
 
