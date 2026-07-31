@@ -3,76 +3,63 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# १. पेजची सेटिंग
-st.set_page_config(
-    page_title="ShevgAI संवाद | Drumstick Expert",
-    page_icon="🌿",
-    layout="centered"
-)
+# १. इथे तुमची गुगल API Key टाका (उद्धरण चिन्हांमध्ये "")
+GOOGLE_API_KEY = "TUMCHI_API_KEY_ITHE_TAKA" 
 
-# २. UI डिझाईन
+# API Key कन्फिगर करणे
+genai.configure(api_key=GOOGLE_API_KEY)
+
+# गुगलच्या अचूक मॉडेलची निवड
+model = genai.GenerativeModel('gemini-1.5-flash')
+
+# पेजचे सेटिंग
+st.set_page_config(page_title="ShevgAI संवाद", page_icon="🌿")
+
+# ॲपचे मुख्य टायटल आणि माहिती
 st.title("🌿 ShevgAI संवाद")
-st.caption("आमची माती, आमची माणसं.")
-st.write("रावसाहेब, इथे तुम्ही शेवगा बागेविषयी कोणतेही प्रश्न थेट विचारू शकता आणि हवे असल्यास फोटोही पाठवू शकता!")
+st.write("आमची माती, आमची माणसं.")
+st.write("रावसाहेब, शेवग्याच्या बागेच्या उत्तम व्यवस्थापनासाठी इथे प्रश्न विचारा किंवा फोटो अपलोड करा.")
+st.markdown("---")
 
-# ३. API Key जोडणी
-try:
-    api_key = st.secrets["GOOGLE_API_KEY"]
-    genai.configure(api_key=api_key)
-except KeyError:
-    st.error("API Key सापडली नाही! कृपया Streamlit च्या Advanced Settings मध्ये Secrets तपासा.")
-    st.stop()
-
-# ४. ShevgAI चे तज्ञ मार्गदर्शन (System Prompt)
-SYSTEM_PROMPT = """
-तुम्ही एक प्रगत शेती तज्ञ (Agricultural Expert) आणि 'ShevgAI' आहात. 
-विशेषतः शेवगा (Moringa/Drumstick) शेतीमध्ये तुमचा हातखंडा आहे. 
-रावसाहेब यांच्या ५४० झाडांच्या बागेसाठी, रोग-कीड नियंत्रण, 00:52:34 व 00:45:45 खत व्यवस्थापन, पाणी व्यवस्थापन आणि आगामी छाटणी याबद्दल अत्यंत अचूक मार्गदर्शन करा. 
-तुमची संपूर्ण उत्तरे फक्त आणि फक्त 'मराठी' भाषेत (Devanagari script) असली पाहिजेत आणि प्रत्येक उत्तरात आदराने 'रावसाहेब' असा उल्लेख करा.
-"""
-model = genai.GenerativeModel('gemini-3.5-flash', system_instruction=SYSTEM_PROMPT)
-# ५. चॅट हिस्टरी जपण्यासाठी सेशन स्टेट
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# आधी झालेला संवाद स्क्रीनवर दाखवणे
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        if "image" in message and message["image"] is not None:
-            st.image(message["image"], width=200)
-        st.markdown(message["content"])
-
-# ६. फोटो अपलोड करण्याची पर्यायी सोय (चॅटसोबत फोटो पाठवण्यासाठी)
-uploaded_file = st.file_uploader("बागेचा फोटो अपलोड करा (पर्यायी - फोटोबद्दल प्रश्न विचारण्यासाठी)", type=["jpg", "jpeg", "png"])
-
-# ७. वापरकर्त्यासाठी मेसेज टाईप करण्याचा बॉक्स (चॅट इनपुट)
-if user_prompt := st.chat_input("शेवगा बागेविषयी तुमचा प्रश्न इथे विचार करा..."):
+# --- इथून सुरू होतो आपला नवीन फॉर्म (कवच) ---
+with st.form(key='shevga_form'):
     
-    current_image = None
-    if uploaded_file is not None:
-        current_image = Image.open(uploaded_file)
+    # फोटो घेण्यासाठी
+    uploaded_file = st.file_uploader("बागेचा किंवा पानाचा/खोडाचा फोटो अपलोड करा (पर्यायी)", type=['jpg', 'jpeg', 'png'])
     
-    # वापरकर्त्याचा मेसेज स्क्रीनवर दाखवणे
-    with st.chat_message("user"):
-        if current_image:
-            st.image(current_image, width=200)
-        st.markdown(user_prompt)
+    # प्रश्न विचारण्यासाठी
+    user_prompt = st.text_input("शेवगा बागेविषयी तुमचा प्रश्न इथे टाईप करा...")
     
-    # हिस्टरीमध्ये सेव्ह करणे
-    st.session_state.messages.append({"role": "user", "content": user_prompt, "image": current_image})
-    
-    # ॲपचे उत्तर जनरेट करणे
-    with st.chat_message("assistant"):
-        with st.spinner("ShevgAI विचार करत आहे..."):
+    # माहिती पाठवण्याचे मुख्य बटन (हे दाबल्याशिवाय ॲप गुगलकडे जाणार नाही)
+    submit_button = st.form_submit_button(label='माहिती मिळवा')
+
+# जेव्हा तुम्ही 'माहिती मिळवा' बटन दाबाल, तेव्हाच पुढची प्रक्रिया होईल
+if submit_button:
+    if uploaded_file or user_prompt:
+        with st.spinner("माहिती शोधत आहे, कृपया थोडा वेळ थांबा..."):
             try:
-                contents = [user_prompt]
-                if current_image:
-                    contents.append(current_image)
+                # जर फोटो आणि प्रश्न दोन्ही असेल
+                if uploaded_file and user_prompt:
+                    image = Image.open(uploaded_file)
+                    response = model.generate_content([user_prompt, image])
                 
-                response = model.generate_content(contents)
-                reply_text = response.text
+                # जर फक्त फोटो असेल (प्रश्न नसेल)
+                elif uploaded_file:
+                    image = Image.open(uploaded_file)
+                    default_prompt = "या फोटोचे काळजीपूर्वक निरीक्षण करा आणि शेतीच्या आणि पीक व्यवस्थापनाच्या दृष्टिकोनातून सविस्तर माहिती सांगा."
+                    response = model.generate_content([default_prompt, image])
                 
-                st.markdown(reply_text)
-                st.session_state.messages.append({"role": "assistant", "content": reply_text, "image": None})
+                # जर फक्त प्रश्न असेल (फोटो नसेल)
+                else:
+                    response = model.generate_content(user_prompt)
+                
+                # आलेले उत्तर स्क्रीनवर दाखवण्यासाठी
+                st.success("माहिती मिळाली!")
+                st.write(response.text)
+                
             except Exception as e:
-                st.error(f"तांत्रिक अडचण आली: {e}")
+                # जर काही तांत्रिक अडचण आली तर लाल रंगात मेसेज दिसेल
+                st.error(f"काहीतरी तांत्रिक अडचण आली आहे. एरर: {e}")
+    else:
+        # जर फोटो किंवा प्रश्न काहीच दिले नसेल तर
+        st.warning("कृपया माहिती मिळवण्यासाठी आधी फोटो अपलोड करा किंवा प्रश्न टाईप करा.")
