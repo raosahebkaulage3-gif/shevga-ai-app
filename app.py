@@ -8,7 +8,7 @@ os.environ["GEMINI_API_KEY"] = "AQ.Ab8RN6JMsRRYJU9XEUntgigYPkCePvatkB0S4UlIInXgj
 
 # सर्वात नवीन आणि चालू असलेले मॉडेल नाव
 model = genai.GenerativeModel(
-    model_name='gemini-2.0-flash',
+    model_name='gemini-1.5-pro',
     system_instruction="You are an expert agricultural assistant for drumstick (shevga) farming. You must always reply strictly in Marathi language (मराठी भाषेतच उत्तरे द्या)."
 )
 
