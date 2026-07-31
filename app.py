@@ -1,14 +1,18 @@
+
 import os
 import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# गुगलची तुमची खात्रीशीर API चावी
-os.environ["GEMINI_API_KEY"] = "AQ.Ab8RN6JMsRRYJU9XEUntgigYPkCePvatkB0S4UlIInXgjprNw"
+# Streamlit Secrets मधून सुरक्षितपणे चावी घेणे
+if "GEMINI_API_KEY" in st.secrets:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+else:
+    st.error("कृपया Streamlit Secrets मध्ये GEMINI_API_KEY सेट करा.")
 
-# सर्वात नवीन आणि चालू असलेले मॉडेल नाव
+# मॉडेल आणि मराठी भाषेची सक्ती
 model = genai.GenerativeModel(
-    model_name='gemini-pro',
+    model_name='gemini-1.5-flash',
     system_instruction="You are an expert agricultural assistant for drumstick (shevga) farming. You must always reply strictly in Marathi language (मराठी भाषेतच उत्तरे द्या)."
 )
 
